@@ -11,6 +11,6 @@ open class LiveDataTest {
 
     @Rule
     @JvmField
-    var globalTimeout: Timeout = Timeout.seconds(2) // 10 seconds max per method tested
+    var globalTimeout: Timeout = Timeout.seconds(20) // 10 seconds max per method tested
 
 }

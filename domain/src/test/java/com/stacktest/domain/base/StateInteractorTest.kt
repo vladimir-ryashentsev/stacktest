@@ -4,13 +4,40 @@ import com.stacktest.domain.base.StateInteractor.Companion.RETRY_PERIOD_MS
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import kotlin.concurrent.thread
 
 
 @ExperimentalCoroutinesApi
 class StateInteractorTest : LiveDataTest() {
+
+    @Test
+    fun conc() {
+        runBlocking {
+            val scope = this
+            repeat(100) {
+                var interactor = object : StateInteractor<Int>(scope) {
+                    override suspend fun action(params: Int?) {
+                        println(params)
+                    }
+                }
+                aaa(interactor, it)
+            }
+        }
+    }
+
+    fun aaa(interactor: StateInteractor<Int>, it: Int){
+        thread {
+            runBlocking {
+                println("start")
+                interactor.doAction(it)
+                println("finish")
+            }
+        }.join()
+    }
 
     @Test
     fun `state must be InProgress right after doAction call`() = runBlockingTest {
@@ -83,16 +110,16 @@ class StateInteractorTest : LiveDataTest() {
         }
 
     private fun successInteractor(scope: CoroutineScope) =
-        object : StateInteractor(scope) {
-            override suspend fun action() {
+        object : StateInteractor<Unit>(scope) {
+            override suspend fun action(params: Unit?) {
                 delay(ACTION_DURATION)
             }
         }
 
-    private fun failOnFirstTimeInteractor(scope: CoroutineScope): StateInteractor {
-        return object : StateInteractor(scope) {
+    private fun failOnFirstTimeInteractor(scope: CoroutineScope): StateInteractor<Unit> {
+        return object : StateInteractor<Unit>(scope) {
             var firstTime = true
-            override suspend fun action() {
+            override suspend fun action(params: Unit?) {
                 delay(ACTION_DURATION)
                 if (firstTime) {
                     firstTime = false

@@ -8,19 +8,18 @@ class RegionsInteractor(
     scope: CoroutineScope,
     private val regionsRepository: RegionsRepository,
     itemsPerPage: Int
-) : PagedGetInteractor<Region>(
+) : PagedGetInteractor<Country, Region>(
     scope,
     itemsPerPage
 ) {
-    var country: Country? = null
 
-    override suspend fun doAction() {
-        if (country == null)
-            throw IllegalStateException("country must be set")
+    override suspend fun doAction(params: Country?) {
+        if (params == null)
+            throw IllegalStateException("country must be passed as parameter of doAction")
 
-        super.doAction()
+        super.doAction(params)
     }
 
-    override suspend fun loadPageAction(offset: Int, limit: Int) =
-        regionsRepository.getRegions(country!!, offset, limit)
+    override suspend fun loadPageAction(offset: Int, limit: Int, params: Country?) =
+        regionsRepository.getRegions(params!!, offset, limit)
 }

@@ -7,10 +7,10 @@ class CoutriesInteractor(
     scope: CoroutineScope,
     private val countriesRepository: CountriesRepository,
     itemsPerPage: Int
-) : PagedGetInteractor<Country>(
+) : PagedGetInteractor<Unit, Country>(
     scope,
     itemsPerPage
 ) {
-    override suspend fun loadPageAction(offset: Int, limit: Int) =
+    override suspend fun loadPageAction(offset: Int, limit: Int, params: Unit?) =
         countriesRepository.getCountries(offset, limit)
 }

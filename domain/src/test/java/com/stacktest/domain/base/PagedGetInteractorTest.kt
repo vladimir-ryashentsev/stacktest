@@ -25,9 +25,11 @@ class PagedGetInteractorTest : LiveDataTest() {
 
             //then
             assertEquals(
-                DATA.subList(0,
+                DATA.subList(
+                    0,
                     ITEMS_PER_PAGE
-                ), interactor.getData().value)
+                ), interactor.getData().value
+            )
             assert(interactor.getState().value is State.Error)
         }
 
@@ -58,9 +60,11 @@ class PagedGetInteractorTest : LiveDataTest() {
 
             //then
             assertEquals(
-                DATA.subList(0,
+                DATA.subList(
+                    0,
                     ITEMS_PER_PAGE
-                ), interactor.getData().value)
+                ), interactor.getData().value
+            )
             assertEquals(State.Success, interactor.getState().value)
         }
 
@@ -98,11 +102,12 @@ class PagedGetInteractorTest : LiveDataTest() {
             assertEquals(State.Success, interactor.getState().value)
         }
 
-    fun fourPagesInteractor(scope: CoroutineScope): PagedGetInteractor<Int> {
-        val interactor = object : PagedGetInteractor<Int>(scope,
+    fun fourPagesInteractor(scope: CoroutineScope): PagedGetInteractor<Unit, Int> {
+        val interactor = object : PagedGetInteractor<Unit, Int>(
+            scope,
             ITEMS_PER_PAGE
         ) {
-            override suspend fun loadPageAction(offset: Int, limit: Int): List<Int> {
+            override suspend fun loadPageAction(offset: Int, limit: Int, params: Unit?): List<Int> {
                 if (offset > DATA.size)
                     return listOf()
 
@@ -118,12 +123,13 @@ class PagedGetInteractorTest : LiveDataTest() {
         return interactor
     }
 
-    fun secondPageFailInteractor(scope: CoroutineScope): PagedGetInteractor<Int> {
-        val interactor = object : PagedGetInteractor<Int>(scope,
+    fun secondPageFailInteractor(scope: CoroutineScope): PagedGetInteractor<Unit, Int> {
+        val interactor = object : PagedGetInteractor<Unit, Int>(
+            scope,
             ITEMS_PER_PAGE
         ) {
             var firstTimeOfSecondPageLoading = true
-            override suspend fun loadPageAction(offset: Int, limit: Int): List<Int> {
+            override suspend fun loadPageAction(offset: Int, limit: Int, params: Unit?): List<Int> {
                 delay(ACTION_DURATION)
 
                 if (offset > 0 && firstTimeOfSecondPageLoading) {

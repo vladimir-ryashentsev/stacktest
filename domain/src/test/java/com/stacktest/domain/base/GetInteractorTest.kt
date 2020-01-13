@@ -54,9 +54,9 @@ class GetInteractorTest : LiveDataTest() {
         assert(interactor.getState().value is State.Error)
     }
 
-    fun successInteractor(scope: CoroutineScope): GetInteractor<Int> {
-        val interactor = object : GetInteractor<Int>(scope) {
-            override suspend fun getAction(): Int {
+    fun successInteractor(scope: CoroutineScope): GetInteractor<Unit, Int> {
+        val interactor = object : GetInteractor<Unit, Int>(scope) {
+            override suspend fun getAction(params: Unit?): Int {
                 delay(ACTION_DURATION)
                 return DATA
             }
@@ -64,10 +64,10 @@ class GetInteractorTest : LiveDataTest() {
         return interactor
     }
 
-    private fun failOnFirstTimeInteractor(scope: CoroutineScope): GetInteractor<Int> {
-        return object : GetInteractor<Int>(scope) {
+    private fun failOnFirstTimeInteractor(scope: CoroutineScope): GetInteractor<Unit, Int> {
+        return object : GetInteractor<Unit, Int>(scope) {
             var firstTime = true
-            override suspend fun getAction(): Int {
+            override suspend fun getAction(params: Unit?): Int {
                 delay(ACTION_DURATION)
                 if (firstTime) {
                     firstTime = false

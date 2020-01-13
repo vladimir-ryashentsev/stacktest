@@ -1,31 +1,33 @@
 package com.stacktest.domain.base
 
 import kotlinx.coroutines.CoroutineScope
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
-abstract class PagedGetInteractor<T>(
+abstract class PagedGetInteractor<Params, Result>(
     scope: CoroutineScope,
     private val itemsPerPage: Int
-) : GetInteractor<List<T>>(
+) : GetInteractor<Params, List<Result>>(
     scope
 ) {
 
-    private var itemsLoaded = 0
-    private var hasMore = true
+    private var itemsLoaded = AtomicInteger(0)
+    private var hasMore = AtomicBoolean(true)
 
-    override suspend fun doAction() {
-        if (hasMore)
-            super.doAction()
+    override suspend fun doAction(params: Params?) {
+        if (hasMore.get())
+            super.doAction(params)
     }
 
-    final override suspend fun getAction(): List<T> {
-        val page = loadPageAction(itemsLoaded, itemsPerPage)
+    final override suspend fun getAction(params: Params?): List<Result> {
+        val page = loadPageAction(itemsLoaded.get(), itemsPerPage, params)
 
         if (page.size < itemsPerPage)
-            hasMore = false
+            hasMore.set(false)
 
-        itemsLoaded += page.size
+        itemsLoaded.addAndGet(page.size)
         if (getData().value != null) {
-            val allItems = mutableListOf<T>()
+            val allItems = mutableListOf<Result>()
             allItems.addAll(getData().value!!)
             allItems.addAll(page)
             return allItems
@@ -33,5 +35,5 @@ abstract class PagedGetInteractor<T>(
         return page
     }
 
-    abstract suspend fun loadPageAction(offset: Int, limit: Int): List<T>
+    abstract suspend fun loadPageAction(offset: Int, limit: Int, params: Params?): List<Result>
 }
