@@ -2,13 +2,8 @@ package com.stacktest.domain.base
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import kotlinx.coroutines.CoroutineScope
 
-abstract class GetInteractor<Params, Result>(
-    scope: CoroutineScope
-) : StateInteractor<Params>(
-    scope
-) {
+abstract class GetInteractor<Params, Result> : StateInteractor<Params>() {
 
     private val data = MutableLiveData<Result>()
     fun getData(): LiveData<Result> = data

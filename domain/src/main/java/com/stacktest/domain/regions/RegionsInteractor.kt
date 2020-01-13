@@ -2,14 +2,11 @@ package com.stacktest.domain.regions
 
 import com.stacktest.domain.base.PagedGetInteractor
 import com.stacktest.domain.countries.Country
-import kotlinx.coroutines.CoroutineScope
 
 class RegionsInteractor(
-    scope: CoroutineScope,
     private val regionsRepository: RegionsRepository,
     itemsPerPage: Int
 ) : PagedGetInteractor<Country, Region>(
-    scope,
     itemsPerPage
 ) {
 

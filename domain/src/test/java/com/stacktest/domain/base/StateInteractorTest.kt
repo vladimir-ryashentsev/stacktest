@@ -15,31 +15,6 @@ import kotlin.concurrent.thread
 class StateInteractorTest : LiveDataTest() {
 
     @Test
-    fun conc() {
-        runBlocking {
-            val scope = this
-            repeat(100) {
-                var interactor = object : StateInteractor<Int>(scope) {
-                    override suspend fun action(params: Int?) {
-                        println(params)
-                    }
-                }
-                aaa(interactor, it)
-            }
-        }
-    }
-
-    fun aaa(interactor: StateInteractor<Int>, it: Int){
-        thread {
-            runBlocking {
-                println("start")
-                interactor.doAction(it)
-                println("finish")
-            }
-        }.join()
-    }
-
-    @Test
     fun `state must be InProgress right after doAction call`() = runBlockingTest {
 
         //given

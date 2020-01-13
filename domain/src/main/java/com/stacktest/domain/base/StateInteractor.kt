@@ -3,32 +3,28 @@ package com.stacktest.domain.base
 import androidx.annotation.MainThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-abstract class StateInteractor<Params>(
-    private val scope: CoroutineScope
-) {
+abstract class StateInteractor<Params> {
 
     private val state = MutableLiveData<State>()
     fun getState(): LiveData<State> = state
 
-    private var job: Job? = null
+    private var isInProgress = false
 
     abstract suspend fun action(params: Params?)
 
     @MainThread
     internal open suspend fun doAction(params: Params? = null) {
-        if (job == null || !job!!.isActive) {
-            println("start job")
-            job = scope.launch { loadUntilSuccessAndEmitStates(params) }
+        if (!isInProgress) {
+            isInProgress = true
+            coroutineScope { launch { loadUntilSuccessAndEmitStates(params) } }
         }
     }
 
     private suspend fun loadUntilSuccessAndEmitStates(params: Params?) {
-        println("loadUntilSuccessAndEmitStates")
         while (true) {
             try {
                 state.postValue(State.InProgress)

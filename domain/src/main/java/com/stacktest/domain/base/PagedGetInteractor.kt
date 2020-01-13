@@ -1,15 +1,11 @@
 package com.stacktest.domain.base
 
-import kotlinx.coroutines.CoroutineScope
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
 abstract class PagedGetInteractor<Params, Result>(
-    scope: CoroutineScope,
     private val itemsPerPage: Int
-) : GetInteractor<Params, List<Result>>(
-    scope
-) {
+) : GetInteractor<Params, List<Result>>() {
 
     private var itemsLoaded = AtomicInteger(0)
     private var hasMore = AtomicBoolean(true)
