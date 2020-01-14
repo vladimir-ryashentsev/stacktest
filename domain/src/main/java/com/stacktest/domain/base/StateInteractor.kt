@@ -3,11 +3,12 @@ package com.stacktest.domain.base
 import androidx.annotation.MainThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.coroutines.CoroutineContext
 
-abstract class StateInteractor<Params> {
+abstract class StateInteractor<Params>(private val context: CoroutineContext) {
 
     private val state = MutableLiveData<State>()
     fun getState(): LiveData<State> = state
@@ -17,10 +18,13 @@ abstract class StateInteractor<Params> {
     abstract suspend fun action(params: Params?)
 
     @MainThread
-    internal open suspend fun doAction(params: Params? = null) {
+    open fun doActionAsync(params: Params? = null) {
         if (!isInProgress) {
             isInProgress = true
-            coroutineScope { launch { loadUntilSuccessAndEmitStates(params) } }
+            CoroutineScope(context).launch {
+                loadUntilSuccessAndEmitStates(params)
+            }
+            isInProgress = false
         }
     }
 

@@ -6,11 +6,11 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
 import com.stacktest.domain.base.LiveDataTest
 import com.stacktest.domain.countries.Country
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import kotlin.coroutines.CoroutineContext
 
 @ExperimentalCoroutinesApi
 class RegionsInteractorTest : LiveDataTest() {
@@ -19,11 +19,11 @@ class RegionsInteractorTest : LiveDataTest() {
     fun `must throw IllegalStateException is case of calling doAction without country`() =
         runBlockingTest {
             //given
-            val interactor = successInteractor(this)
+            val interactor = successInteractor(coroutineContext)
 
             try {
                 //when
-                interactor.doAction()
+                interactor.doActionAsync()
 
                 //then
                 assert(false) { "IllegalStateException must be thrown without country" }
@@ -35,25 +35,25 @@ class RegionsInteractorTest : LiveDataTest() {
     @Test
     fun `data must contain all regions`() = runBlockingTest {
         //given
-        val interactor = successInteractor(this)
+        val interactor = successInteractor(coroutineContext)
 
         //when
         repeat(10) {
-            interactor.doAction(COUNTRY)
+            interactor.doActionAsync(COUNTRY)
         }
 
         //then
         assertEquals(REGIONS, interactor.getData().value)
     }
 
-    suspend fun successInteractor(scope: CoroutineScope): RegionsInteractor {
+    suspend fun successInteractor(context: CoroutineContext): RegionsInteractor {
         val countriesRepository = mock<RegionsRepository>()
         whenever(countriesRepository.getRegions(any(), any(), any())).then { listOf<Region>() }
         whenever(countriesRepository.getRegions(any(), eq(0), eq(2))).then { REGIONS.subList(0, 2) }
         whenever(countriesRepository.getRegions(any(), eq(2), eq(2))).then { REGIONS.subList(2, 3) }
 
         val interactor = RegionsInteractor(
-            scope,
+            context,
             countriesRepository,
             ITEMS_PER_PAGE
         )

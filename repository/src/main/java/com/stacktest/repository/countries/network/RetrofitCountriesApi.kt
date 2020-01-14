@@ -1,10 +1,11 @@
 package com.stacktest.repository.countries.network
 
-import com.stacktest.domain.countries.Country
 import retrofit2.http.GET
+import retrofit2.http.Headers
 import retrofit2.http.Query
 
 interface RetrofitCountriesApi {
+    @Headers("Content-Type: application/json")
     @GET("database.getCountries")
     suspend fun getCountries(
         @Query("offset") offset: Int,

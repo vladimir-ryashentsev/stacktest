@@ -1,5 +1,6 @@
 package com.stacktest.repository
 
+import android.util.Log
 import androidx.room.Room
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import com.stacktest.domain.countries.CountriesRepository
@@ -18,9 +19,12 @@ import com.stacktest.repository.regions.RegionsRepositoryImpl
 import com.stacktest.repository.regions.RegionsStorage
 import com.stacktest.repository.regions.persistence.RegionDao
 import com.stacktest.repository.regions.persistence.RegionsStorageImpl
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+
 
 val reposModule = module {
 
@@ -29,10 +33,18 @@ val reposModule = module {
     }
 
     single<Retrofit> {
+        val httpClient = OkHttpClient.Builder()
+        httpClient.addInterceptor {
+            val request: Request = it.request()
+            Log.d("REQUEST", "request: $request")
+            it.proceed(request)
+        }
+
         Retrofit.Builder()
-            .baseUrl("https://api.github.com")
+            .baseUrl("https://api.vk.com/method/")
             .addCallAdapterFactory(CoroutineCallAdapterFactory())
             .addConverterFactory(GsonConverterFactory.create())
+            .client(httpClient.build())
             .build()
     }
 

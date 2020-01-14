@@ -1,12 +1,12 @@
 package com.stacktest.domain.base
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
+import kotlin.coroutines.CoroutineContext
 
 @ExperimentalCoroutinesApi
 class PagedGetInteractorTest : LiveDataTest() {
@@ -15,11 +15,11 @@ class PagedGetInteractorTest : LiveDataTest() {
     fun `data must contain 1 page and state must be Error right after fail to load second page`() =
         runBlockingTest {
             //given
-            val interactor = secondPageFailInteractor(this)
+            val interactor = secondPageFailInteractor(coroutineContext)
 
             //when
             repeat(2) {
-                interactor.doAction()
+                interactor.doActionAsync()
                 delay(ACTION_DURATION + 1)
             }
 
@@ -37,10 +37,10 @@ class PagedGetInteractorTest : LiveDataTest() {
     fun `data must be null and state must be InProgress right after doAction call`() =
         runBlockingTest {
             //given
-            val interactor = fourPagesInteractor(this)
+            val interactor = fourPagesInteractor(coroutineContext)
 
             //when
-            interactor.doAction()
+            interactor.doActionAsync()
             delay(10)
 
             //then
@@ -52,10 +52,10 @@ class PagedGetInteractorTest : LiveDataTest() {
     fun `data must contain first page and state must be Success on action finished`() =
         runBlockingTest {
             //given
-            val interactor = fourPagesInteractor(this)
+            val interactor = fourPagesInteractor(coroutineContext)
 
             //when
-            interactor.doAction()
+            interactor.doActionAsync()
             delay(ACTION_DURATION + 1)
 
             //then
@@ -72,11 +72,11 @@ class PagedGetInteractorTest : LiveDataTest() {
     fun `data must contain 3 pages and state must be Success on action finished 3 times`() =
         runBlockingTest {
             //given
-            val interactor = fourPagesInteractor(this)
+            val interactor = fourPagesInteractor(coroutineContext)
 
             //when
             repeat(3) {
-                interactor.doAction()
+                interactor.doActionAsync()
                 delay(ACTION_DURATION + 1)
             }
 
@@ -89,11 +89,11 @@ class PagedGetInteractorTest : LiveDataTest() {
     fun `data must contain 4 pages and state must be Success on action finished more then 4 times`() =
         runBlockingTest {
             //given
-            val interactor = fourPagesInteractor(this)
+            val interactor = fourPagesInteractor(coroutineContext)
 
             //when
             repeat(10) {
-                interactor.doAction()
+                interactor.doActionAsync()
                 delay(ACTION_DURATION + 1)
             }
 
@@ -102,11 +102,8 @@ class PagedGetInteractorTest : LiveDataTest() {
             assertEquals(State.Success, interactor.getState().value)
         }
 
-    fun fourPagesInteractor(scope: CoroutineScope): PagedGetInteractor<Unit, Int> {
-        val interactor = object : PagedGetInteractor<Unit, Int>(
-            scope,
-            ITEMS_PER_PAGE
-        ) {
+    fun fourPagesInteractor(context: CoroutineContext): PagedGetInteractor<Unit, Int> {
+        val interactor = object : PagedGetInteractor<Unit, Int>(context, ITEMS_PER_PAGE) {
             override suspend fun loadPageAction(offset: Int, limit: Int, params: Unit?): List<Int> {
                 if (offset > DATA.size)
                     return listOf()
@@ -123,11 +120,8 @@ class PagedGetInteractorTest : LiveDataTest() {
         return interactor
     }
 
-    fun secondPageFailInteractor(scope: CoroutineScope): PagedGetInteractor<Unit, Int> {
-        val interactor = object : PagedGetInteractor<Unit, Int>(
-            scope,
-            ITEMS_PER_PAGE
-        ) {
+    fun secondPageFailInteractor(context: CoroutineContext): PagedGetInteractor<Unit, Int> {
+        val interactor = object : PagedGetInteractor<Unit, Int>(context, ITEMS_PER_PAGE) {
             var firstTimeOfSecondPageLoading = true
             override suspend fun loadPageAction(offset: Int, limit: Int, params: Unit?): List<Int> {
                 delay(ACTION_DURATION)
